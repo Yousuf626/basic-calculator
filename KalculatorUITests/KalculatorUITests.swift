@@ -1,41 +1,68 @@
-//
-//  KalculatorUITests.swift
-//  KalculatorUITests
-//
-//  Created by Adil Saleem on 31/10/2023.
-//  Copyright © 2023 Jogendra Singh. All rights reserved.
-//
+
 
 import XCTest
 
-final class KalculatorUITests: XCTestCase {
+final class CalculatorUITests: XCTestCase {
 
-    var app:XCUIApplication?
+    private var app: XCUIApplication!
     
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-        // UI tests must launch the application that they test.
-        let app = XCUIApplication()
+        app = XCUIApplication()
         app.launch()
 
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
     }
 
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        app = nil
     }
 
-    func testExample() throws {
-        
-        // Get all the buttons
-        if let buttons = app?.buttons{
-            XCTAssert(true)
+    
+    func testExistenceOfCalculatorButtons() {
+        let buttonIdentifiers = ["7", "9", "2", "5", "4", "1", "6", "8", "3", "0", "+", "-", "*", "/", "=", "C"]
+        for identifier in buttonIdentifiers {
+            XCTAssertTrue(app.buttons[identifier].exists, "The \(identifier) button should exist.")
         }
-        
-        
     }
-
+    
+   
+    func testFunctionalityOfResultDisplay() {
+        tapButtons(["1", "1"])
+        XCTAssertEqual(resultLabelText(), "11")
+        
+        tapButtons(["-", "1", "0"])
+        XCTAssertEqual(resultLabelText(), "1")
+        
+        tapButtons(["="])
+        XCTAssertEqual(resultLabelText(), "1")
+        
+        tapButtons(["C"])
+        XCTAssertEqual(resultLabelText(), "0")
+    }
+    
+   
+    func testCalculatorComputationAccuracy() {
+        tapButtons(["8", "1", "/", "9", "="])
+        XCTAssertEqual(resultLabelText(), "9")
+        
+        tapButtons(["*", "1", "0", "="])
+        XCTAssertEqual(resultLabelText(), "90")
+    }
+    
+   
+    func testCalculatorErrorHandling() {
+        tapButtons(["11", "/", "0", "="])
+        XCTAssertEqual(resultLabelText(), "Err")
+        
+        tapButtons(["C"])
+        XCTAssertEqual(resultLabelText(), "0")
+    }
+    
+    private func tapButtons(_ buttonLabels: [String]) {
+        buttonLabels.forEach { app.buttons[$0].tap() }
+    }
+    
+    private func resultLabelText() -> String {
+        return app.staticTexts.element(matching: .any, identifier: "resultScreen").label
+    }
 }
